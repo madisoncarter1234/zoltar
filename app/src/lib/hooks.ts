@@ -1,11 +1,28 @@
 'use client';
 
-import { useAccount, useReadContract, useWriteContract, useSwitchChain } from 'wagmi';
-import { parseEther, type Address } from 'viem';
+import { useAccount, useReadContract, useSwitchChain } from 'wagmi';
+import { useSendCalls } from 'wagmi/experimental';
+import { parseEther, type Address, encodeFunctionData, encodeAbiParameters } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { EXTRACT_ABI, EXTRACT_ADDRESS } from './contracts';
 
 const BUY_IN_AMOUNT = parseEther('0.001');
+
+// Base Builder Code for attribution (ERC-8021)
+const BUILDER_CODE = 'bc_cjnlob4i';
+
+// ERC-8021 data suffix format: 0x + codes encoded + magic suffix
+// Magic suffix: keccak256("erc8021.attribution")[:4] = 0x00008021
+function createAttributionSuffix(codes: string[]): `0x${string}` {
+  const encoded = encodeAbiParameters(
+    [{ type: 'string[]' }],
+    [codes]
+  );
+  // Remove 0x prefix from encoded, add magic suffix
+  return `${encoded}00008021` as `0x${string}`;
+}
+
+const DATA_SUFFIX = createAttributionSuffix([BUILDER_CODE]);
 
 // Get contract address for current chain
 function useContractAddress(): Address | undefined {
@@ -43,15 +60,15 @@ export function useHasBoughtIn() {
   });
 }
 
-// Buy in to the game
+// Buy in to the game with Builder Code attribution
 export function useBuyIn() {
-  const address = useContractAddress();
+  const contractAddress = useContractAddress();
   const { chain } = useAccount();
   const { switchChain } = useSwitchChain();
-  const { writeContract, isPending, isSuccess, error } = useWriteContract();
+  const { sendCalls, isPending, isSuccess, error } = useSendCalls();
 
   const buyIn = async () => {
-    if (!address) {
+    if (!contractAddress) {
       console.error('No contract address');
       return;
     }
@@ -67,13 +84,28 @@ export function useBuyIn() {
       }
     }
 
-    console.log('Calling buyIn...');
-    writeContract({
-      address,
+    console.log('Calling buyIn with builder code attribution...');
+
+    // Encode the buyIn function call
+    const data = encodeFunctionData({
       abi: EXTRACT_ABI,
       functionName: 'buyIn',
-      value: BUY_IN_AMOUNT,
-      chainId: baseSepolia.id,
+    });
+
+    sendCalls({
+      calls: [
+        {
+          to: contractAddress,
+          value: BUY_IN_AMOUNT,
+          data,
+        },
+      ],
+      capabilities: {
+        dataSuffix: {
+          value: DATA_SUFFIX,
+          optional: true, // Don't fail if wallet doesn't support it
+        },
+      },
     });
   };
 
