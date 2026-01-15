@@ -56,12 +56,13 @@ contract ExtractV2 {
     /// @notice Start a new game with a secret word commitment
     /// @param _commitment keccak256(secret)
     function startGame(bytes32 _commitment) external onlyAgent {
-        // Can only start if no active game
-        if (gameActive) revert GameStillActive();
+        // Check computed active state (time-aware), not just storage flag
+        bool isActive = gameActive && block.timestamp < gameEndTime;
+        if (isActive) revert GameStillActive();
 
+        gameActive = true;
         gameId++;
         commitment = _commitment;
-        gameActive = true;
         gameEndTime = block.timestamp + GAME_DURATION;
 
         emit GameStarted(gameId, _commitment, gameEndTime);

@@ -3,7 +3,7 @@ import { baseSepolia } from 'viem/chains';
 
 // ExtractV2 contract addresses
 export const EXTRACT_ADDRESS: Record<number, Address> = {
-  [baseSepolia.id]: '0x0AEA74a22d5bFb0B030d012568A60D9249619d86',
+  [baseSepolia.id]: '0x2b8F8769918078D63664f621133EcB22Ba6aEeC6',
 };
 
 export const EXTRACT_ABI = [
