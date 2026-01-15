@@ -30,7 +30,6 @@ export function GameControls({ onStartGame }: GameControlsProps) {
   const [lastResponse, setLastResponse] = useState<string | null>(null);
   const [won, setWon] = useState(false);
   const [chat, setChat] = useState<ChatMessage[]>([]);
-  const [optimisticBuyIn, setOptimisticBuyIn] = useState(false);
 
   // Chat scroll refs
   const chatRef = useRef<HTMLDivElement>(null);
@@ -61,8 +60,8 @@ export function GameControls({ onStartGame }: GameControlsProps) {
     return () => clearInterval(timer);
   }, [isActive]);
 
-  // Effective buy-in state (real or optimistic)
-  const effectivelyBoughtIn = hasBoughtIn || optimisticBuyIn;
+  // Buy-in state from contract
+  const effectivelyBoughtIn = hasBoughtIn;
 
   // Clear state when game changes
   useEffect(() => {
@@ -71,24 +70,15 @@ export function GameControls({ onStartGame }: GameControlsProps) {
       setLastResponse(null);
       setTriesRemaining(null);
       setWon(false);
-      setOptimisticBuyIn(false);
     }
   }, [gameId]);
 
-  // Handle buy-in success - refetch and clear optimistic
+  // Refetch buy-in status when transaction succeeds
   useEffect(() => {
     if (buyInSuccess) {
       refetchBuyIn();
-      // Keep optimistic state until real state confirms
     }
   }, [buyInSuccess, refetchBuyIn]);
-
-  // Clear optimistic when real buy-in confirms
-  useEffect(() => {
-    if (hasBoughtIn && optimisticBuyIn) {
-      setOptimisticBuyIn(false);
-    }
-  }, [hasBoughtIn, optimisticBuyIn]);
 
   // Fetch chat on mount and periodically
   useEffect(() => {
@@ -129,9 +119,7 @@ export function GameControls({ onStartGame }: GameControlsProps) {
   };
 
   const handleBuyIn = async () => {
-    // Optimistically update UI
-    setOptimisticBuyIn(true);
-    setTriesRemaining(5);
+    // Don't optimistically update - wait for real confirmation
     buyIn();
   };
 
@@ -155,7 +143,6 @@ export function GameControls({ onStartGame }: GameControlsProps) {
         setLastResponse(`Error: ${data.error}`);
         // If error is about buy-in, reset optimistic state
         if (data.needsBuyIn) {
-          setOptimisticBuyIn(false);
           setTriesRemaining(null);
         }
       } else {
