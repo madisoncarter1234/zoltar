@@ -1,0 +1,16 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjEyMzQ1LCJ0eXBlIjoiY3VzdG9keSIsImtleSI6IjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCJ9",
+    "payload": "eyJkb21haW4iOiJleHRyYWN0LnZlcmNlbC5hcHAifQ",
+    "signature": "REPLACE_WITH_SIGNATURE"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Extract",
+    "iconUrl": "https://extract.vercel.app/icon.png",
+    "homeUrl": "https://extract.vercel.app",
+    "splashImageUrl": "https://extract.vercel.app/splash.png",
+    "splashBackgroundColor": "#000000",
+    "webhookUrl": "https://extract.vercel.app/api/webhook"
+  }
+}

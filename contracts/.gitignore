@@ -1,0 +1,14 @@
+# Environment
+.env
+.env.local
+
+# Build
+cache/
+out/
+
+# Broadcast (contains deployment info but keep structure)
+broadcast/**/dry-run/
+
+# Sensitive deployment data
+broadcast/**/run-latest.json
+cache/**/run-latest.json
